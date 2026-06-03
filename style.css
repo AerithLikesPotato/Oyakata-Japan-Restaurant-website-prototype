@@ -1205,6 +1205,7 @@ ul {
 }
 
 .feature-item h4 {
+  color:black;
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
