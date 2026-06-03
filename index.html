@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oyakata Japanese Restaurant — Online Order</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .about-img-collage { position: relative; height: 480px; }
+    .about-img-main { position: absolute; width: 72%; height: 78%; object-fit: cover; border-radius: 16px; top: 0; left: 0; box-shadow: var(--shadow-lg); }
+    .about-img-accent { position: absolute; width: 48%; height: 52%; object-fit: cover; border-radius: 12px; bottom: 0; right: 0; box-shadow: var(--shadow); border: 4px solid var(--paper); }
+    .about-text .section-label { justify-content: flex-start; }
+    .about-text .section-label::before { display: none; }
+    .about-title { font-family: var(--font-disp); color:black; font-size: clamp(2rem,3.5vw,2.8rem); font-weight: 300; line-height: 1.2; margin-bottom: 1.25rem; }
+    .about-body { color: var(--mist); line-height: 1.85; font-size: 0.95rem; }
+    .about-stats { display: flex; gap: 2.5rem; margin-top: 2rem; }
+    .stat-num { font-family: var(--font-disp); font-size: 2.2rem; font-weight: 300; color: var(--gold); }
+    .stat-label { font-size: 0.75rem; color: var(--mist); text-transform: uppercase; letter-spacing: 0.1em; }
+    .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .cat-card { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 3/4; cursor: pointer; transition: transform 0.3s; }
+    .cat-card:hover { transform: translateY(-4px); }
+    .cat-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+    .cat-card:hover img { transform: scale(1.06); }
+    .cat-card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(13,11,8,0.82), rgba(13,11,8,0.1)); display: flex; flex-direction: column; justify-content: flex-end; padding: 1.25rem; }
+    .cat-card-name { font-family: var(--font-disp); color: #fff; font-size: 1.3rem; font-weight: 300; }
+    .cat-card-count { font-size: 0.72rem; color: rgba(255,255,255,0.55); letter-spacing: 0.08em; margin-top: 0.2rem; }
+    @media (max-width: 900px) { .about-grid { grid-template-columns: 1fr; } .about-img-collage { height: 300px; } .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; } .about-stats { gap: 1.5rem; } }
+  </style>
+</head>
+<body class="page-enter">
+<div id="cart-slot"></div>
+<div class="page-wrapper">
+
+<div id="alert-slot"></div>
+<div id="nav-slot"></div>
+
+<section class="hero">
+  <div class="hero-slides" id="hero-slides"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-label">Authentic Japanese Cuisine</div>
+    <h1 class="hero-title">Food That <em>Tells<br>A Story</em></h1>
+    <p class="hero-sub">From hand-rolled nigiri to soul-warming ramen — order online and enjoy the flavours of Japan.</p>
+    <div class="hero-ctas">
+      <a href="menu.html" class="btn btn-primary">Order Now →</a>
+      <a href="#about" class="btn btn-outline">Our Story</a>
+    </div>
+  </div>
+  <button class="hero-arrow prev" id="hero-prev" aria-label="Previous">&#10094;</button>
+  <button class="hero-arrow next" id="hero-next" aria-label="Next">&#10095;</button>
+  <div class="hero-nav" id="hero-dots"></div>
+</section>
+
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee"></div>
+</div>
+
+<div class="feature-strip">
+  <div class="feature-item">
+    <div class="feature-icon"><i class="fa-solid fa-box" style="color: rgb(168, 143, 0);"></i></div>
+    <div><h4>Fast Delivery</h4><p>30–45 min average. Real-time tracking from kitchen to door.</p></div>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon"><i class="fa-solid fa-lock" style="color: rgb(168, 143, 0);"></i></div>
+    <div><h4>Secure Checkout</h4><p>256-bit SSL encryption. Your data stays safe, always.</p></div>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon"><i class="fa-solid fa-gift" style="color: rgb(168, 143, 0);"></i></div>
+    <div><h4>Free Delivery</h4><p>On all orders over $30. No code needed.</p></div>
+  </div>
+</div>
+
+<section class="section section-cream">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Browse</div>
+      <h2 class="section-title">Explore Our Menu</h2>
+      <p class="section-sub">Every dish prepared fresh with premium ingredients from Japan.</p>
+    </div>
+    <div class="cat-grid">
+      <a href="menu.html?cat=specials" class="cat-card reveal reveal-delay-1">
+        <img src="images/rest_6.jpg" alt="Specials">
+        <div class="cat-card-overlay"><div class="cat-card-name">Chef's Specials</div><div class="cat-card-count">3 dishes</div></div>
+      </a>
+      <a href="menu.html?cat=rolls" class="cat-card reveal reveal-delay-2">
+        <img src="images/rest_1.jpg" alt="Sushi Rolls">
+        <div class="cat-card-overlay"><div class="cat-card-name">Sushi Rolls</div><div class="cat-card-count">8 varieties</div></div>
+      </a>
+      <a href="menu.html?cat=mains" class="cat-card reveal reveal-delay-3">
+        <img src="images/rest_3.jpg" alt="Mains">
+        <div class="cat-card-overlay"><div class="cat-card-name">Ramen &amp; Mains</div><div class="cat-card-count">6 dishes</div></div>
+      </a>
+      <a href="menu.html?cat=desserts" class="cat-card reveal reveal-delay-4">
+        <img src="images/rest_2.jpg" alt="Desserts">
+        <div class="cat-card-overlay"><div class="cat-card-name">Desserts &amp; Drinks</div><div class="cat-card-count">5 items</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Top Picks</div>
+      <h2 class="section-title">Most Popular</h2>
+      <p class="section-sub">Our guests keep coming back for these.</p>
+    </div>
+    <div class="product-grid" id="popular-grid"></div>
+    <div class="text-center mt-3">
+      <a href="menu.html" class="btn btn-dark">View Full Menu →</a>
+    </div>
+  </div>
+</section>
+
+<section class="section section-cream" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-img-collage reveal">
+        <img class="about-img-main" src="images/rest_4.jpg" alt="Restaurant interior">
+        <img class="about-img-accent" src="images/rest_5.jpg" alt="Chef at work">
+      </div>
+      <div class="about-text reveal reveal-delay-2">
+        <div class="section-label">Our Story</div>
+        <h2 class="about-title">Tradition Meets<br><em>Modern Craft</em></h2>
+        <p class="about-body">Founded in 2008, Oyakata began as a small ramen stall in Osaka before bringing its recipes to the world. Every bowl, every roll, every plate is made with ingredients sourced from trusted Japanese farmers and fisheries.</p>
+        <p class="about-body" style="margin-top:1rem">We believe food is ceremony. Our chefs trained under Michelin-starred kitchens, and that dedication flows into everything we serve — available now, right at your door.</p>
+        <div class="about-stats">
+          <div><div class="stat-num">17</div><div class="stat-label">Years Open</div></div>
+          <div><div class="stat-num">4.9★</div><div class="stat-label">Avg. Rating</div></div>
+          <div><div class="stat-num">50k+</div><div class="stat-label">Orders Delivered</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-dark">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Reviews</div>
+      <h2 class="section-title" style="color:var(--paper)">What People Say</h2>
+    </div>
+    <div class="testimonials">
+      <div class="testimonial reveal reveal-delay-1">
+        <div class="stars">★★★★★</div>
+        <q>The Dragon Roll was absolutely divine. Came in under 35 minutes — fresher than any sushi I've had in a restaurant.</q>
+        <div class="testimonial-author">— Sarah M., regular customer</div>
+      </div>
+      <div class="testimonial reveal reveal-delay-2">
+        <div class="stars">★★★★★</div>
+        <q>Ordered the Omakase platter for date night. My partner said it was the best sushi she's ever eaten. We'll be ordering weekly.</q>
+        <div class="testimonial-author">— James K., verified buyer</div>
+      </div>
+      <div class="testimonial reveal reveal-delay-3">
+        <div class="stars">★★★★★</div>
+        <q>The Tonkotsu Ramen is soul food. Perfect broth, the chashu melts in your mouth. Checkout was smooth and delivery was hot.</q>
+        <div class="testimonial-author">— Mei L., loyal customer</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="layout.js"></script>
+<script src="app.js"></script>
+<script src="products.js"></script>
+<script>
+  document.getElementById('alert-slot').innerHTML = renderAlert();
+  document.getElementById('nav-slot').innerHTML = renderNav();
+  document.getElementById('cart-slot').innerHTML = renderCart();
+  document.getElementById('footer-slot').innerHTML = renderFooter();
+
+  // ── Hero Slider (FIX: use PRODUCTS images, add auto-slide) ──
+  let heroIdx = 0;
+  const heroImages = [
+    'images/rest_1.jpg','images/rest_2.jpg','images/rest_3.jpg',
+    'images/rest_4.jpg','images/rest_5.jpg','images/rest_6.jpg'
+  ];
+
+  function renderHero() {
+    const track = document.getElementById('hero-slides');
+    heroImages.forEach((src, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'hero-slide' + (i === 0 ? ' active' : '');
+      slide.style.backgroundImage = `url('${src}')`;
+      track.appendChild(slide);
+    });
+    buildDots();
+  }
+
+  function buildDots() {
+    const dots = document.getElementById('hero-dots');
+    dots.innerHTML = '';
+    heroImages.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'hero-dot' + (i === heroIdx ? ' active' : '');
+      dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+      dot.onclick = () => goToSlide(i);
+      dots.appendChild(dot);
+    });
+  }
+
+  function goToSlide(n) {
+    document.querySelectorAll('.hero-slide')[heroIdx].classList.remove('active');
+    document.querySelectorAll('.hero-dot')[heroIdx].classList.remove('active');
+    heroIdx = (n + heroImages.length) % heroImages.length;
+    document.querySelectorAll('.hero-slide')[heroIdx].classList.add('active');
+    document.querySelectorAll('.hero-dot')[heroIdx].classList.add('active');
+  }
+
+  document.getElementById('hero-prev').onclick = () => goToSlide(heroIdx - 1);
+  document.getElementById('hero-next').onclick = () => goToSlide(heroIdx + 1);
+  renderHero();
+  // FIX: restored auto-slide
+  setInterval(() => goToSlide(heroIdx + 1), 4200);
+
+  // ── Marquee (FIX: use <span> not <div>) ──
+  (function renderMarquee() {
+    const marquee = document.getElementById('marquee');
+    const items = [
+      'ORDER ONLINE', 'AUTHENTIC RAMEN', 'DESSERTS & DRINKS',
+      '4.9 STAR RATED', 'FAST 35-MIN DELIVERY', 'PREMIUM INGREDIENTS',
+      'FREE DELIVERY OVER $30', 'FRESH DAILY', 'ORDER ONLINE',
+      'AUTHENTIC RAMEN', 'DESSERTS & DRINKS', '4.9 STAR RATED'
+    ];
+    items.forEach(item => {
+      const el = document.createElement('span'); // FIX: was 'div'
+      el.textContent = item;
+      marquee.appendChild(el);
+    });
+  })();
+
+  // ── Popular Products (FIX: use PRODUCTS array from products.js, not fetch) ──
+  (function loadPopular() {
+    const popular = PRODUCTS.filter(p => p.badge === 'popular' || p.badge === 'chef').slice(0, 4);
+    const grid = document.getElementById('popular-grid');
+    grid.innerHTML = popular.map(p => `
+      <div class="product-card reveal">
+        <div class="product-img-wrap">
+          <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/320x240/f2ede4/8a8680?text=🍣'">
+          ${p.badge ? `<span class="product-badge">${p.badge === 'chef' ? '👨‍🍳 Chef' : '🔥 Popular'}</span>` : ''}
+          <div class="product-quick-add" onclick="addToCart({id:${p.id},name:'${p.name.replace(/'/g,"\\'")}',price:${p.price},img:'${p.img}'})">
+            + Add to Cart
+          </div>
+        </div>
+        <div class="product-body">
+          <div class="product-category">${p.category}</div>
+          <div class="product-name">${p.name}</div>
+          <div class="product-desc">${p.desc}</div>
+          <div class="product-footer">
+            <div class="product-price">$${p.price.toFixed(2)}</div>
+            <button class="add-btn" onclick="addToCart({id:${p.id},name:'${p.name.replace(/'/g,"\\'")}',price:${p.price},img:'${p.img}'})" aria-label="Add to cart">+</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    setTimeout(() => {
+      grid.querySelectorAll('.reveal').forEach(el => {
+        new IntersectionObserver(([e]) => { if (e.isIntersecting) el.classList.add('visible'); }, { threshold: 0.1 }).observe(el);
+      });
+    }, 50);
+  })();
+</script>
+</div>
+</body>
+</html>

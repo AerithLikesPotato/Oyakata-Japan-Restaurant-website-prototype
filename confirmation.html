@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed — Oyakata</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    .summary-title { font-family: var(--font-disp);color:black; font-size: 1.2rem; font-weight: 400; margin-bottom: 1.25rem; }
+    .summary-item { display: flex; color:black; justify-content: space-between; font-size: 0.87rem; margin-bottom: 0.6rem; }
+    .summary-divider { border: none; border-top: 1px solid rgba(0,0,0,0.07); margin: 0.75rem 0; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--mist); margin-bottom: 0.4rem; }
+    .summary-total { display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; color: var(--ink); padding-top: 0.55rem; border-top: 1px solid rgba(0,0,0,0.07); margin-top: 0.4rem; }
+    #order-items .order-summary { background: #fff; border-radius: var(--radius); border: 1px solid rgba(0,0,0,0.07); padding: 1.75rem; }
+    .confirmation-page {
+      padding: calc(var(--nav-h) + 3rem) 0 6rem;
+      min-height: 100vh;
+      background: var(--cream);
+    }
+    .tracking-steps {
+      display: flex; flex-direction: column; gap: 0;
+      margin: 2rem 0;
+    }
+    .track-step {
+      display: flex; align-items: flex-start; gap: 1.25rem;
+      padding-bottom: 1.75rem;
+      position: relative;
+    }
+    .track-step:not(:last-child)::before {
+      content: '';
+      position: absolute; left: 19px; top: 40px;
+      width: 2px; height: calc(100% - 20px);
+      background: rgba(0,0,0,0.1);
+    }
+    .track-step.done::before { background: var(--gold); }
+    .track-dot {
+      width: 40px; height: 40px; flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--cream);
+      border: 2px solid rgb(255, 255, 255);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      position: relative; z-index: 1;
+    }
+    .track-step.done .track-dot { background: var(--gold); border-color: var(--gold); }
+    .track-step.active .track-dot { background: var(--ink); border-color: var(--ink); animation: trackPulse 1.5s ease-in-out infinite; }
+    @keyframes trackPulse { 0%,100%{ box-shadow:0 0 0 0 rgba(13,11,8,0.3)} 50%{box-shadow:0 0 0 10px rgba(13,11,8,0)} }
+    .track-info h4 { font-size: 0.9rem; color:black; font-weight: 600; margin-bottom: 0.2rem; }
+    .track-info p { font-size: 0.8rem; color: black; }
+    .track-step.done .track-info h4 { color: var(--ink); }
+    .track-step:not(.done):not(.active) .track-info h4 { color: var(--mist); }
+    .eta-bar {
+      background: var(--gold);
+      color: var(--ink);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+    .eta-label { font-size: 0.78rem; opacity: 0.7; font-weight: 400; display: block; margin-bottom: 0.2rem; }
+    .eta-time { font-family: var(--font-disp); font-size: 2rem; font-weight: 300; }
+    .eta-icon { font-size: 2.5rem; }
+
+    .confirmation-layout { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start; max-width: 900px; margin: 0 auto; }
+    @media(max-width:768px){ .confirmation-layout{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body class="page-enter">
+<div id="cart-slot"></div>
+<div class="page-wrapper">
+<div id="alert-slot"></div>
+<div id="nav-slot"></div>
+
+<main class="confirmation-page">
+  <div class="container">
+    <div style="max-width:900px;margin:0 auto">
+      
+      <div style="text-align:center;margin-bottom:3rem">
+        <div class="confirm-icon"><i class="fa-solid fa-check-circle" style="color: var(--gold); font-size: 3rem;"></i></div>
+        <h1 class="confirm-title">Order <span class="confirm-num" id="order-num">#OYK-XXXXXX</span> Placed!</h1>
+        <p style="color:var(--mist);max-width:420px;margin:.75rem auto 0">Thank you! A confirmation has been sent to <strong id="order-email">your email</strong>.</p>
+      </div>
+
+      <div class="confirmation-layout">
+        
+        <div>
+          
+          <div class="eta-bar">
+            <div>
+              <span class="eta-label">Estimated Delivery</span>
+              <div class="eta-time" id="eta-time">35–45 min</div>
+            </div>
+            <div class="eta-icon"><i class="fa-solid fa-truck" style="color: var(--ink);"></i></div>
+          </div>
+
+
+            <div class="confirm-box" style="color:black; margin-bottom:1.5rem">
+              <h5>Delivery To</h5>
+              <p id="conf-name">Loading…</p>
+            </div>
+          </div>
+
+          
+          <h3 style="font-family:var(--font-disp);font-size:1.4rem;font-weight:300;margin-bottom:1rem">Track Your Order</h3>
+          <div class="tracking-steps">
+            <div class="track-step done">
+              <div class="track-dot"><i class="fa-solid fa-check" style="color: var(--paper);"></i></div>
+              <div class="track-info">
+                <h4>Order Confirmed</h4>
+                <p>Just now</p>
+              </div>
+            </div>
+            <div class="track-step active">
+              <div class="track-dot"><i class="fa-solid fa-fire" style="color: var(--paper);"></i></div>
+              <div class="track-info">
+                <h4>Cooking Now</h4>
+                <p>Estimated 15 min</p>
+              </div>
+            </div>
+            <div class="track-step">
+              <div class="track-dot"><i class="fa-solid fa-box" style="color: var(--ink);"></i></div>
+              <div class="track-info">
+                <h4>Ready for Pickup</h4>
+                <p>Estimated 20 min</p>
+              </div>
+            </div>
+            <div class="track-step">
+              <div class="track-dot"><i class="fa-solid fa-truck" style="color: var(--ink);"></i></div>
+              <div class="track-info">
+                <h4>Out for Delivery</h4>
+                <p>Estimated 35 min</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+        <div id="order-items"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="footer-slot"></div>
+
+<script src="layout.js"></script>
+<script src="app.js"></script>
+<script>
+  document.getElementById('alert-slot').innerHTML = renderAlert();
+  document.getElementById('nav-slot').innerHTML = renderNav();
+  document.getElementById('cart-slot').innerHTML = renderCart();
+  document.getElementById('footer-slot').innerHTML = renderFooter();
+
+  // FIX: read real order data from sessionStorage (set by checkout.html)
+  const orderData = JSON.parse(sessionStorage.getItem('oyakata_order') || 'null');
+
+  if (orderData) {
+    document.getElementById('order-num').textContent = '#' + orderData.id;
+    document.getElementById('conf-name').textContent = orderData.name;
+    if (orderData.email) {
+      document.getElementById('order-email').textContent = orderData.email;
+    }
+    if (orderData.type === 'pickup') {
+      document.getElementById('eta-time').textContent = '20 min';
+      const etaIcon = document.querySelector('.eta-icon i');
+      if (etaIcon) { etaIcon.className = 'fa-solid fa-bag-shopping'; }
+    }
+
+    const cart = orderData.items || [];
+    let subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const tax = subtotal * 0.08;
+    const delivery = orderData.type === 'pickup' ? 0 : (subtotal >= 30 ? 0 : 3.99);
+    const total = subtotal + tax + delivery;
+
+    document.getElementById('order-items').innerHTML = `
+      <div class="order-summary">
+        <div class="summary-title">Order Summary</div>
+        ${cart.map(item => `
+          <div class="summary-item">
+            <div>${item.name} <span style="color:var(--mist)">×${item.qty}</span></div>
+            <div>$${(item.price * item.qty).toFixed(2)}</div>
+          </div>`).join('')}
+        <hr class="summary-divider">
+        <div class="summary-row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Tax (8%)</span><span>$${tax.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Delivery</span><span>${delivery === 0 ? '<span style="color:#27ae60">Free</span>' : '$' + delivery.toFixed(2)}</span></div>
+        <div class="summary-total"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+      </div>
+    `;
+    
+    showToast('Purchase completed! 🎉 Thank you!');
+  } else {
+    // Fallback if arriving directly without placing an order
+    document.getElementById('order-num').textContent = '#OYK-' + Math.random().toString(36).substr(2,6).toUpperCase();
+    document.getElementById('conf-name').textContent = '—';
+    document.getElementById('order-items').innerHTML = '<p style="color:var(--mist);font-size:.85rem">No order data found.</p>';
+  }
+
+  // Tracking animation
+  const steps = document.querySelectorAll('.track-step');
+  let currentStep = 1;
+  const progress = setInterval(() => {
+    if (currentStep < steps.length) {
+      steps[currentStep - 1].classList.remove('active');
+      steps[currentStep - 1].classList.add('done');
+      if (steps[currentStep]) steps[currentStep].classList.add('active');
+      currentStep++;
+    } else {
+      clearInterval(progress);
+    }
+  }, 5000);
+</script>
+</div>
+</body>
+</html>

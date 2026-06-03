@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — Oyakata</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    .checkout-page { padding: calc(var(--nav-h) + 3rem) 0 5rem; min-height: 100vh; background: var(--cream); }
+    .checkout-header { margin-bottom: 2.5rem; }
+    .checkout-header h1 { font-family: var(--font-disp); font-size: 2rem; font-weight: 300; }
+    .checkout-header p { color: var(--mist); font-size: 0.88rem; margin-top: 0.3rem; }
+    .delivery-toggle { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .delivery-opt { flex: 1; padding: 0.9rem 1rem; border: 1.5px solid rgba(0,0,0,0.1); border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 0.84rem; text-align: center; }
+    .delivery-opt.selected { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+    .delivery-opt-icon { font-size: 1.3rem; margin-bottom: 0.3rem; }
+    .delivery-opt-label { font-weight: 600; color: black; }
+    .delivery-opt-sub { font-size: 0.72rem; color: var(--mist); margin-top: 0.2rem; }
+    .card-icons { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; align-items: center; font-size: 0.75rem; color: var(--mist); }
+    .card-pill { background: var(--cream); border-radius: 5px; padding: 0.3rem 0.55rem; font-size: 0.7rem; font-weight: 600; color: var(--ink); border: 1px solid rgba(0,0,0,0.1); }
+    .form-section-title { font-family: var(--font-disp); color:black; font-size: 1.25rem; font-weight: 400; margin-bottom: 1.25rem; }
+    .form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    #place-order-btn { margin-top: 1.25rem; }
+    #place-order-btn.loading { opacity: 0.7; pointer-events: none; }
+    .promo-success { color: #27ae60; font-size: 0.78rem; font-weight: 600; display: none; margin-top: 0.3rem; }
+    .promo-success.visible { display: block; }
+    /* FIX: order summary sidebar classes */
+    .summary-title { font-family: var(--font-disp); font-size: 1.2rem; font-weight: 400; margin-bottom: 1.25rem; }
+    .summary-item { display: flex; justify-content: space-between; font-size: 0.87rem; margin-bottom: 0.6rem; }
+    .summary-divider { border: none; border-top: 1px solid rgba(0,0,0,0.07); margin: 0.75rem 0; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--mist); margin-bottom: 0.4rem; }
+    .summary-total { display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; color: var(--ink); padding-top: 0.55rem; border-top: 1px solid rgba(0,0,0,0.07); margin-top: 0.4rem; }
+    #order-summary .order-summary { background: #fff; color:rgb(168,143,0); border-radius: var(--radius); border: 1px solid rgba(0,0,0,0.07); padding: 1.75rem; position: sticky; top: calc(var(--nav-h) + 1.5rem); }
+    @media (max-width: 768px) { .form-grid-3 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="page-enter">
+<div id="cart-slot"></div>
+<div class="page-wrapper">
+
+<div id="alert-slot"></div>
+<div id="nav-slot"></div>
+
+<main class="checkout-page">
+  <div class="container">
+    <div class="checkout-header">
+      <h1>Checkout</h1>
+      <p>Secure checkout powered by SSL encryption <i class="fa-solid fa-lock" style="color: rgb(168, 143, 0);"></i></p>
+    </div>
+
+    <div class="checkout-steps">
+      <div class="step active"><div class="step-num">1</div><span>Delivery</span></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-num">2</div><span>Payment</span></div>
+      <div class="step-line"></div>
+      <div class="step"><div class="step-num">3</div><span>Confirm</span></div>
+    </div>
+
+    <div class="checkout-layout">
+      <div id="form-col">
+
+        <!-- Delivery Method -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-box" style="color:rgb(168,143,0)"></i> Delivery Method</div>
+          <div class="delivery-toggle">
+            <div class="delivery-opt selected" data-type="delivery" onclick="selectDelivery('delivery', this)">
+              <div class="delivery-opt-icon"><i class="fa-solid fa-truck" style="color:rgb(168,143,0)"></i></div>
+              <div class="delivery-opt-label">Delivery</div>
+              <div class="delivery-opt-sub">30–45 min</div>
+            </div>
+            <div class="delivery-opt" data-type="pickup" onclick="selectDelivery('pickup', this)">
+              <div class="delivery-opt-icon"><i class="fa-solid fa-bag-shopping" style="color:rgb(168,143,0)"></i></div>
+              <div class="delivery-opt-label">Pickup</div>
+              <div class="delivery-opt-sub">Ready in 20 min</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Info (FIX: corrected field IDs to match validation) -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-user" style="color:rgb(168,143,0)"></i> Contact Information</div>
+          <div class="form-grid form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="first-name">First Name *</label>
+              <input class="form-input" id="first-name" type="text" placeholder="Jonh" autocomplete="given-name">
+              <span class="form-error" id="err-first-name">Please enter your first name.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="last-name">Last Name *</label>
+              <input class="form-input" id="last-name" type="text" placeholder="Doe" autocomplete="family-name">
+              <span class="form-error" id="err-last-name">Please enter your last name.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="email">Email *</label>
+              <input class="form-input" id="email" type="email" placeholder="you@example.com" autocomplete="email">
+              <span class="form-error" id="err-email">Please enter a valid email.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="phone">Phone *</label>
+              <input class="form-input" id="phone" type="tel" placeholder="+855 000-000-0000" autocomplete="tel">
+              <span class="form-error" id="err-phone">Please enter a valid phone number.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivery Address (FIX: corrected field IDs + 3-col grid) -->
+        <div class="form-section" id="delivery-section">
+          <div class="form-section-title"><i class="fa-solid fa-location-dot" style="color:rgb(168,143,0)"></i> Delivery Address</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="address">Street Address *</label>
+              <input class="form-input" id="address" type="text" placeholder="123 Doun Penh" autocomplete="street-address">
+              <span class="form-error" id="err-address">Please enter your address.</span>
+            </div>
+            <div class="form-grid form-grid-3">
+              <div class="form-group">
+                <label class="form-label" for="city">City *</label>
+                <input class="form-input" id="city" type="text" placeholder="Phnom Penh" autocomplete="address-level2">
+                <span class="form-error" id="err-city">Please enter your city.</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="Province">State</label>
+                <input class="form-input" id="state" type="text" placeholder="       " autocomplete="address-level1">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="postcode">Postcode *</label>
+                <input class="form-input" id="postcode" type="text" placeholder="10001" autocomplete="postal-code">
+                <span class="form-error" id="err-postcode">Please enter a postcode.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-credit-card" style="color:rgb(168,143,0)"></i> Payment</div>
+
+          <!-- Payment method tabs -->
+          <div class="payment-tabs">
+            <div class="pay-tab active" id="tab-card" onclick="switchPayTab('card')">
+              <i class="fa-regular fa-credit-card"></i> Credit / Debit Card
+            </div>
+            <div class="pay-tab" id="tab-bakong" onclick="switchPayTab('bakong')">
+              <i class="fa-solid fa-qrcode"></i> Bakong QR
+            </div>
+          </div>
+
+          <!-- Card panel -->
+          <div class="pay-panel active" id="panel-card">
+            <div class="card-icons">
+              <span class="card-pill">Visa</span><span class="card-pill">Mastercard</span><span class="card-pill">ABA</span><span class="card-pill">ACELEDA</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="card-name">Name on Card *</label>
+                <input class="form-input" id="card-name" type="text" placeholder="S. Tanaka" autocomplete="cc-name">
+                <span class="form-error" id="err-card-name">Please enter the name on the card.</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="card-number">Card Number *</label>
+                <input class="form-input" id="card-number" type="text" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
+                <span class="form-error" id="err-card-number">Please enter a valid card number.</span>
+              </div>
+              <div class="form-grid form-grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="card-expiry">Expiry *</label>
+                  <input class="form-input" id="card-expiry" type="text" placeholder="MM / YY" maxlength="7" autocomplete="cc-exp">
+                  <span class="form-error" id="err-card-expiry">Invalid expiry date.</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="card-cvc">CVC *</label>
+                  <input class="form-input" id="card-cvc" type="text" placeholder="123" maxlength="4" autocomplete="cc-csc">
+                  <span class="form-error" id="err-card-cvc">Invalid CVC.</span>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-top:1rem;font-size:0.75rem;color:var(--mist)">
+              <i class="fa-solid fa-shield-halved" style="color:#27ae60"></i>
+              256-bit SSL Encryption. Your payment info is never stored on our servers.
+            </div>
+          </div>
+
+          <!-- Bakong QR panel -->
+          <div class="pay-panel" id="panel-bakong">
+            <div class="bakong-qr-box">
+              <div class="bakong-badge">
+                <i class="fa-solid fa-building-columns"></i> National Bank of Cambodia · Bakong
+              </div>
+              <img
+                src="images/Bakong_QR.jpg"
+                alt="Bakong QR Code"
+              >
+              <div style="font-weight:600;font-size:0.9rem;color:var(--ink);margin-bottom:0.25rem">Oyakata Japanese Restaurant</div>
+              <div style="font-size:0.8rem;color:var(--mist);margin-bottom:0.75rem">oyakata-restaurant@ABA</div>
+              <div class="bakong-qr-instructions">
+                1. Open your Bakong, ABA, ACLEDA, or any KHQR-compatible app<br>
+                2. Tap <strong>Scan QR</strong> and point at the code above<br>
+                3. Confirm the amount and tap <strong>Pay</strong><br>
+                4. Screenshot your receipt and tap <strong>Place Order</strong>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-top:1rem;font-size:0.75rem;color:var(--mist)">
+              <i class="fa-solid fa-shield-halved" style="color:#27ae60"></i>
+              KHQR certified · Instant transfer · No hidden fees.
+            </div>
+          </div>
+        </div>
+
+        <!-- Promo Code -->
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-tag" style="color:rgb(168,143,0)"></i> Promo Code</div>
+          <div style="display:flex;gap:0.75rem">
+            <input class="form-input" id="promo-input" type="text" placeholder="Enter code (e.g. WELCOME10)" style="flex:1">
+            <button type="button" onclick="applyPromo()" class="btn btn-dark btn-sm">Apply</button>
+          </div>
+          <div class="promo-success" id="promo-success">✓ Promo code applied — 10% off!</div>
+        </div>
+
+        <button id="place-order-btn" class="btn btn-primary btn-full" onclick="placeOrder()">
+          <i class="fa-solid fa-lock"></i> Place Order Securely
+        </button>
+      </div>
+
+      <!-- Order Summary Sidebar (FIX: rendered from real cart) -->
+      <div id="order-summary"></div>
+    </div>
+  </div>
+</main>
+
+<div id="footer-slot"></div>
+
+<script src="layout.js"></script>
+<script src="app.js"></script>
+<script src="products.js"></script>
+<script>
+  document.getElementById('alert-slot').innerHTML = renderAlert();
+  document.getElementById('alert-slot').innerHTML = `
+    <div class="site-alert info" id="site-alert" role="alert">
+      <span><i class="fa-solid fa-lock"></i> &nbsp;Secure Checkout — SSL encrypted &amp; KHQR certified. Your order is safe with us.</span>
+      <button class="site-alert-close" onclick="document.getElementById('site-alert').style.display='none'" aria-label="Dismiss">✕</button>
+    </div>
+  `;
+  document.getElementById('nav-slot').innerHTML = renderNav();
+  document.getElementById('cart-slot').innerHTML = renderCart();
+  document.getElementById('footer-slot').innerHTML = renderFooter();
+
+  // FIX: read from localStorage via getCart(), not window.cart
+  let deliveryType = 'delivery';
+  let promoApplied = false;
+
+  function renderSummary() {
+    const cart = getCart(); // FIX: was window.cart || []
+    const summary = document.getElementById('order-summary');
+    let subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const discount = promoApplied ? subtotal * 0.1 : 0;
+    const discounted = subtotal - discount;
+    const tax = discounted * 0.08;
+    const delivery = deliveryType === 'pickup' ? 0 : (discounted >= 30 ? 0 : 3.99);
+    const total = discounted + tax + delivery;
+
+    summary.innerHTML = `
+      <div class="order-summary">
+        <div class="summary-title">Order Summary</div>
+        ${cart.length === 0
+          ? '<p style="color:var(--mist);font-size:.85rem;text-align:center">Your cart is empty.<br><a href="menu.html" style="color:var(--gold)">Browse menu</a></p>'
+          : cart.map(item => `
+              <div class="summary-item">
+                <div>${item.name} <span style="color:var(--mist)">×${item.qty}</span></div>
+                <div>$${(item.price * item.qty).toFixed(2)}</div>
+              </div>`).join('')
+        }
+        <hr class="summary-divider">
+        <div class="summary-row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+        ${promoApplied ? `<div class="summary-row" style="color:#27ae60"><span>Promo (10%)</span><span>−$${discount.toFixed(2)}</span></div>` : ''}
+        <div class="summary-row"><span>Tax (8%)</span><span>$${tax.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Delivery</span><span>${delivery === 0 ? '<span style="color:#27ae60">Free</span>' : '$' + delivery.toFixed(2)}</span></div>
+        <div class="summary-total"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+      </div>
+    `;
+  }
+
+  window.selectDelivery = function(type, el) {
+    deliveryType = type;
+    document.querySelectorAll('.delivery-opt').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('delivery-section').style.display = type === 'delivery' ? 'block' : 'none';
+    renderSummary();
+  };
+
+  // FIX: applyPromo now recalculates total
+  window.applyPromo = function() {
+    const code = document.getElementById('promo-input').value.trim().toUpperCase();
+    if (['WELCOME10', 'OYAKATA10', 'SAVE10'].includes(code)) {
+      promoApplied = true;
+      document.getElementById('promo-success').classList.add('visible');
+      document.getElementById('promo-input').disabled = true;
+      renderSummary(); // FIX: update total
+      showToast('Promo code applied! 10% off 🎉');
+    } else {
+      showToast('Invalid promo code.', 'error');
+    }
+  };
+
+  // ── Payment tab switcher ──
+  let activePayTab = 'card';
+  window.switchPayTab = function(tab) {
+    activePayTab = tab;
+    document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pay-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+    if (tab === 'bakong') {
+      showToast('Scan the QR code in your Bakong or KHQR app, then place your order.');
+    }
+  };
+
+  // ── Validation helpers ──
+  function setError(id, errId, condition) {
+    const el = document.getElementById(id);
+    const err = document.getElementById(errId);
+    if (!el || !err) return true; // skip missing fields
+    const ok = condition(el.value.trim());
+    el.classList.toggle('error', !ok);
+    err.classList.toggle('visible', !ok);
+    return ok;
+  }
+
+  function validateAll() {
+    const notEmpty = v => v.length > 0;
+    const isEmail  = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    const isPhone  = v => /^[+\d\s\-(). ]{7,}$/.test(v);
+    const isCard   = v => v.replace(/\s/g, '').length >= 16;
+    const isExpiry = v => /^\d{2}\s*\/\s*\d{2}$/.test(v);
+    const isCvv    = v => /^\d{3,4}$/.test(v);
+
+    let ok = true;
+    // FIX: IDs now match the actual input elements
+    ok = setError('first-name', 'err-first-name', notEmpty) && ok;
+    ok = setError('last-name',  'err-last-name',  notEmpty) && ok;
+    ok = setError('email',      'err-email',      isEmail)  && ok;
+    ok = setError('phone',      'err-phone',      isPhone)  && ok;
+
+    if (deliveryType === 'delivery') {
+      ok = setError('address',  'err-address',  notEmpty) && ok;
+      ok = setError('city',     'err-city',     notEmpty) && ok;
+      ok = setError('postcode', 'err-postcode', notEmpty) && ok;
+    }
+
+    if (activePayTab === 'card') {
+      ok = setError('card-name',   'err-card-name',   notEmpty) && ok;
+      ok = setError('card-number', 'err-card-number', isCard)   && ok;
+      ok = setError('card-expiry', 'err-card-expiry', isExpiry) && ok;
+      ok = setError('card-cvc',    'err-card-cvc',    isCvv)    && ok;
+    }
+
+    return ok;
+  }
+
+  // FIX: placeOrder now validates, checks cart, clears cart on success
+  window.placeOrder = function() {
+    const cart = getCart();
+    if (cart.length === 0) { showToast('Your cart is empty!', 'error'); return; }
+    if (!validateAll()) { showToast('Please fix the errors above.', 'error'); return; }
+
+    const btn = document.getElementById('place-order-btn');
+    btn.classList.add('loading');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing…';
+
+    setTimeout(() => {
+      const orderNum = 'OYK-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+      const subtotalRaw = cart.reduce((s,i) => s + i.price * i.qty, 0);
+      const discount = promoApplied ? subtotalRaw * 0.1 : 0;
+      const discounted = subtotalRaw - discount;
+      const tax = discounted * 0.08;
+      const delivery = deliveryType === 'pickup' ? 0 : (discounted >= 30 ? 0 : 3.99);
+      const orderData = {
+        id: orderNum,
+        items: cart,
+        total: '$' + (discounted + tax + delivery).toFixed(2),
+        type: deliveryType,
+        name: document.getElementById('first-name').value + ' ' + document.getElementById('last-name').value,
+        email: document.getElementById('email').value,
+      };
+      sessionStorage.setItem('oyakata_order', JSON.stringify(orderData));
+      // FIX: clear cart after order placed
+      localStorage.removeItem('oyakata_cart');
+      showToast('Order placed successfully! ✓ 🎉');
+      window.location.href = 'confirmation.html';
+    }, 1800);
+  };
+
+  // Card number auto-format
+  document.addEventListener('DOMContentLoaded', () => {
+    const cn = document.getElementById('card-number');
+    if (cn) cn.addEventListener('input', e => {
+      let v = e.target.value.replace(/\D/g, '').substring(0, 16);
+      e.target.value = v.match(/.{1,4}/g)?.join(' ') || v;
+    });
+    const exp = document.getElementById('card-expiry');
+    if (exp) exp.addEventListener('input', e => {
+      let v = e.target.value.replace(/\D/g, '');
+      if (v.length >= 2) v = v.substring(0, 2) + ' / ' + v.substring(2, 4);
+      e.target.value = v;
+    });
+    renderSummary();
+  });
+</script>
+</div>
+</body>
+</html>

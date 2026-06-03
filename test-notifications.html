@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Notifications</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      padding: 40px;
+      background: linear-gradient(135deg, #f2ede4 0%, #e8d49a 100%);
+      min-height: 200vh;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .test-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(13, 11, 8, 0.14);
+    }
+    h1 {
+      color: #0d0b08;
+      margin-bottom: 30px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 300;
+    }
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+    .btn-success:hover {
+      background: #229954;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    }
+    .btn-error {
+      background: #c0392b;
+      color: white;
+    }
+    .btn-error:hover {
+      background: #a93226;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+    }
+    .btn-info {
+      background: #3498db;
+      color: white;
+    }
+    .btn-info:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+    .test-description {
+      color: #8a8680;
+      font-size: 14px;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .scroll-indicator {
+      margin-top: 40px;
+      padding: 20px;
+      background: #f2ede4;
+      border-left: 3px solid #c9a84c;
+      border-radius: 6px;
+      color: #0d0b08;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+<div class="test-container">
+  <h1>🔔 Notification Test</h1>
+  
+  <p class="test-description">
+    Click the buttons below to test the notification system. Notifications should appear in the <strong>bottom-right corner of your screen</strong>, not at the bottom of the page. Try scrolling down while a notification is visible!
+  </p>
+
+  <div class="button-group">
+    <button class="btn-success" onclick="showToast('✓ Item added to cart! 🛒', 'success')">
+      Test: Add to Cart
+    </button>
+    <button class="btn-success" onclick="showToast('✓ Order placed successfully! 🎉', 'success')">
+      Test: Order Placed
+    </button>
+    <button class="btn-success" onclick="showToast('✓ Message sent! We\'ll get back to you soon 📬', 'success')">
+      Test: Contact Submitted
+    </button>
+    <button class="btn-success" onclick="showToast('✓ Purchase completed! Thank you! 🎉', 'success')">
+      Test: Purchase Complete
+    </button>
+    <button class="btn-error" onclick="showToast('✗ Something went wrong. Please try again.', 'error')">
+      Test: Error Notification
+    </button>
+    <button class="btn-info" onclick="testMultipleNotifications()">
+      Test: Multiple Notifications (5)
+    </button>
+  </div>
+
+  <div class="scroll-indicator">
+    📜 <strong>Pro Tip:</strong> After clicking a button, try scrolling down the page. The notification should stay in the bottom-right corner of your viewport, not follow the page content.
+  </div>
+</div>
+
+<!-- Add lots of content for scrolling -->
+<div style="height: 800px; margin-top: 40px;">
+  <div style="background: white; padding: 40px; margin: 0 auto; max-width: 600px; border-radius: 12px; box-shadow: 0 8px 40px rgba(13, 11, 8, 0.14);">
+    <h2 style="color: #0d0b08; font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; margin-bottom: 20px;">Scroll Content</h2>
+    <p style="color: #8a8680; line-height: 1.8; font-size: 15px;">
+      This is extra content to allow you to scroll down and test that notifications stay fixed to the viewport. Keep scrolling to see more content and verify that the notifications don't move with the page...
+    </p>
+    <p style="color: #8a8680; line-height: 1.8; font-size: 15px; margin-top: 15px;">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+    </p>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  function testMultipleNotifications() {
+    const messages = [
+      '🛒 Ramen bowl added!',
+      '🍣 Sushi platter added!',
+      '🥢 Side dish added!'
+    ];
+    messages.forEach((msg, i) => {
+      setTimeout(() => showToast(msg, 'success'), i * 500);
+    });
+  }
+</script>
+
+</div>
+</div>
+</body>
+</html>

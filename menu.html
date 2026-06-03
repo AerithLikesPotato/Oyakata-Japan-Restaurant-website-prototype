@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu — Oyakata Japanese Restaurant</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    .menu-hero {
+      background: var(--ink);
+      padding: calc(var(--nav-h) + 3.5rem) 0 3.5rem;
+      text-align: center;
+    }
+    .menu-hero h1 {
+      font-family: var(--font-disp);
+      font-size: clamp(2.5rem,5vw,4rem);
+      font-weight: 300;
+      color: var(--paper);
+    }
+    .menu-hero p { color: rgba(255,255,255,0.5); margin-top: 0.75rem; }
+    .menu-hero em { color: var(--gold); font-style: italic; }
+
+    .sort-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .result-count { font-size: 0.83rem; color: var(--mist); }
+    .sort-select {
+      padding: 0.5rem 0.9rem; border: 1.5px solid rgba(0,0,0,0.1);
+      border-radius: 8px; font-size: 0.82rem; font-family: var(--font-body);
+      background: #fff; color: var(--ink); outline: none; cursor: pointer;
+    }
+
+    .no-results {
+      text-align: center; padding: 5rem 2rem; color: var(--mist);
+      display: none;
+    }
+    .no-results .emoji { font-size: 3rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body class="page-enter">
+<div id="cart-slot"></div>
+<div class="page-wrapper">
+
+<div id="alert-slot"></div>
+<div id="nav-slot"></div>
+
+<div class="menu-hero">
+  <div class="container">
+    <div class="section-label" style="justify-content:center;color:var(--gold);margin-bottom:.75rem">Our Menu</div>
+    <h1>Crafted with <em>Passion</em></h1>
+    <p>Every item made fresh. Order online, delivered to your door.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="product-filters" id="filter-bar"></div>
+    <div class="sort-bar">
+      <div class="result-count" id="result-count">Showing all items</div>
+      <select class="sort-select" id="sort-select">
+        <option value="default">Sort: Default</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
+        <option value="name">Name: A → Z</option>
+      </select>
+    </div>
+    <div class="product-grid" id="product-grid"></div>
+    <div class="no-results" id="no-results">
+      <div class="emoji">🍽️</div>
+      <p>No dishes found. Try a different search or category.</p>
+    </div>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="layout.js"></script>
+<script src="app.js"></script>
+<script src="products.js"></script>
+<script>
+  document.getElementById('alert-slot').innerHTML = renderAlert();
+  document.getElementById('alert-slot').innerHTML = `
+    <div class="site-alert warn" id="site-alert" role="alert">
+      <span>⚡ <strong>Flash Sale:</strong> Chef's Specials are 15% off today only — add them to your cart now!</span>
+      <button class="site-alert-close" onclick="document.getElementById('site-alert').style.display='none'" aria-label="Dismiss">✕</button>
+    </div>
+  `;
+  document.getElementById('nav-slot').innerHTML = renderNav();
+  document.getElementById('cart-slot').innerHTML = renderCart();
+  document.getElementById('footer-slot').innerHTML = renderFooter();
+
+  // ── URL params ──
+  const params = new URLSearchParams(location.search);
+  let activeCat = params.get('cat') || 'all';
+  let searchQ = params.get('search') || '';
+
+  // Pre-fill search input
+  if (searchQ) {
+    const si = document.querySelector('.nav-search-input');
+    if (si) si.value = searchQ;
+  }
+
+  // ── Build filters ──
+  const filterBar = document.getElementById('filter-bar');
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (cat.id === activeCat ? ' active' : '');
+    btn.textContent = cat.label;
+    btn.dataset.cat = cat.id;
+    btn.addEventListener('click', () => {
+      activeCat = cat.id;
+      searchQ = '';
+      const si = document.querySelector('.nav-search-input');
+      if (si) si.value = '';
+      filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === activeCat));
+      renderGrid();
+    });
+    filterBar.appendChild(btn);
+  });
+
+  // Search from nav
+  document.addEventListener('DOMContentLoaded', () => {
+    const si = document.querySelector('.nav-search-input');
+    if (si) si.addEventListener('input', e => { searchQ = e.target.value.trim().toLowerCase(); renderGrid(); });
+  });
+
+  // Sort
+  document.getElementById('sort-select').addEventListener('change', renderGrid);
+
+  // ── Render ──
+  function renderGrid() {
+    const sortVal = document.getElementById('sort-select').value;
+    let items = PRODUCTS.filter(p => {
+      const catMatch = activeCat === 'all' || p.category === activeCat;
+      const searchMatch = !searchQ || p.name.toLowerCase().includes(searchQ) || p.desc.toLowerCase().includes(searchQ) || p.category.toLowerCase().includes(searchQ);
+      return catMatch && searchMatch;
+    });
+
+    if (sortVal === 'price-asc') items.sort((a,b) => a.price - b.price);
+    else if (sortVal === 'price-desc') items.sort((a,b) => b.price - a.price);
+    else if (sortVal === 'name') items.sort((a,b) => a.name.localeCompare(b.name));
+
+    const grid = document.getElementById('product-grid');
+    const noResults = document.getElementById('no-results');
+    const countEl = document.getElementById('result-count');
+
+    countEl.textContent = `Showing ${items.length} item${items.length !== 1 ? 's' : ''}`;
+
+    if (items.length === 0) {
+      grid.innerHTML = '';
+      noResults.style.display = 'block';
+      return;
+    }
+    noResults.style.display = 'none';
+
+    const badgeLabel = { popular: '🔥 Popular', new: 'New', chef: '👨‍🍳 Chef', null: '' };
+
+    grid.innerHTML = items.map((p, i) => `
+      <div class="product-card reveal reveal-delay-${(i%4)+1}">
+        <div class="product-img-wrap">
+          <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/320x240/f2ede4/8a8680?text=🍣'">
+          ${p.badge ? `<span class="product-badge ${p.badge === 'new' ? 'new' : ''}">${badgeLabel[p.badge]}</span>` : ''}
+          <div class="product-quick-add" onclick="addToCart({id:${p.id},name:'${p.name.replace(/'/g,"\\'")}',price:${p.price},img:'${p.img}'})">
+            <i class="fa-solid fa-plus"></i> Add to Cart
+          </div>
+        </div>
+        <div class="product-body">
+          <div class="product-category">${p.category}</div>
+          <div class="product-name">${p.name}</div>
+          <div class="product-desc">${p.desc}</div>
+          <div class="product-footer">
+            <div class="product-price">$${p.price.toFixed(2)}</div>
+            <button class="add-btn" onclick="addToCart({id:${p.id},name:'${p.name.replace(/'/g,"\\'")}',price:${p.price},img:'${p.img}'})" aria-label="Add ${p.name} to cart">+</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // re-run reveal observer for new cards
+    setTimeout(() => {
+      const els = grid.querySelectorAll('.reveal');
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+      }, { threshold: 0.08 });
+      els.forEach(el => obs.observe(el));
+    }, 50);
+  }
+
+
+  renderGrid();
+</script>
+</div>
+</body>
+</html>
